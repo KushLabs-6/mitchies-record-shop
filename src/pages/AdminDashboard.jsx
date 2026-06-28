@@ -20,13 +20,21 @@ function AdminDashboard() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
 
-  // Cropper State
-  const [imageSrc, setImageSrc] = useState(null);
-  const [originalFile, setOriginalFile] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  // Front Cover Cropper State
+  const [imageSrcFront, setImageSrcFront] = useState(null);
+  const [originalFileFront, setOriginalFileFront] = useState(null);
+  const [cropFront, setCropFront] = useState({ x: 0, y: 0 });
+  const [zoomFront, setZoomFront] = useState(1);
+  const [rotationFront, setRotationFront] = useState(0);
+  const [croppedAreaPixelsFront, setCroppedAreaPixelsFront] = useState(null);
+
+  // Back Cover Cropper State
+  const [imageSrcBack, setImageSrcBack] = useState(null);
+  const [originalFileBack, setOriginalFileBack] = useState(null);
+  const [cropBack, setCropBack] = useState({ x: 0, y: 0 });
+  const [zoomBack, setZoomBack] = useState(1);
+  const [rotationBack, setRotationBack] = useState(0);
+  const [croppedAreaPixelsBack, setCroppedAreaPixelsBack] = useState(null);
 
   const navigate = useNavigate();
 
@@ -70,12 +78,21 @@ function AdminDashboard() {
     navigate('/');
   };
 
-  const onFileChange = async (e) => {
+  const onFileChangeFront = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setOriginalFile(file);
+      setOriginalFileFront(file);
       let imageDataUrl = await readFile(file);
-      setImageSrc(imageDataUrl);
+      setImageSrcFront(imageDataUrl);
+    }
+  };
+
+  const onFileChangeBack = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setOriginalFileBack(file);
+      let imageDataUrl = await readFile(file);
+      setImageSrcBack(imageDataUrl);
     }
   };
 
@@ -87,86 +104,85 @@ function AdminDashboard() {
     });
   };
 
-  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
-
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!imageSrc || !croppedAreaPixels) return setError('Please select and crop an image.');
+    if (!imageSrcFront || !croppedAreaPixelsFront || !imageSrcBack || !croppedAreaPixelsBack) {
+      return setError('Please select and crop both Front and Back cover images.');
+    }
     
     setError('');
     setUploading(true);
 
     if (localStorage.getItem('mockAdmin') === 'true') {
       setTimeout(async () => {
-        const croppedImageBlob = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
-        const url = URL.createObjectURL(croppedImageBlob);
-        setPhotos([{ id: Date.now().toString(), url, recordName: recordName || 'Untitled', details }]);
-        setImageSrc(null);
-        setOriginalFile(null);
-        setRecordName('');
-        setDetails('');
-        setZoom(1);
-        setRotation(0);
+        const croppedFrontBlob = await getCroppedImg(imageSrcFront, croppedAreaPixelsFront, rotationFront);
+        const croppedBackBlob = await getCroppedImg(imageSrcBack, croppedAreaPixelsBack, rotationBack);
+        
+        const urlFront = URL.createObjectURL(croppedFrontBlob);
+        const urlBack = URL.createObjectURL(croppedBackBlob);
+        
+        setPhotos([{ id: Date.now().toString(), urlFront, urlBack, recordName: recordName || 'Untitled', details }, ...photos]);
+        
+        resetForm();
         setUploading(false);
       }, 1000);
       return;
     }
 
     try {
-      // Get the cropped image blob
-      const croppedImageBlob = await getCroppedImg(
-        imageSrc,
-        croppedAreaPixels,
-        rotation
-      );
-
-      // Create a unique filename
-      const filename = `${Date.now()}_cropped_${originalFile.name}`;
-      const storageRef = ref(storage, `records/${filename}`);
+      // 1. Process Front Cover
+      const croppedFrontBlob = await getCroppedImg(imageSrcFront, croppedAreaPixelsFront, rotationFront);
+      const frontFilename = `${Date.now()}_front_${originalFileFront.name}`;
+      const frontRef = ref(storage, `records/${frontFilename}`);
       
-      const uploadTask = uploadBytesResumable(storageRef, croppedImageBlob);
+      // 2. Process Back Cover
+      const croppedBackBlob = await getCroppedImg(imageSrcBack, croppedAreaPixelsBack, rotationBack);
+      const backFilename = `${Date.now()}_back_${originalFileBack.name}`;
+      const backRef = ref(storage, `records/${backFilename}`);
 
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const prog = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          setProgress(prog);
-        },
-        (err) => {
-          console.error(err);
-          setError('Failed to upload image.');
-          setUploading(false);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          
-          await addDoc(collection(db, 'records'), {
-            url: downloadURL,
-            recordName: recordName || 'Untitled Record',
-            details: details,
-            createdAt: serverTimestamp(),
-            uploadedBy: user.email
-          });
-          
-          // Reset form
-          setImageSrc(null);
-          setOriginalFile(null);
-          setRecordName('');
-          setDetails('');
-          setZoom(1);
-          setRotation(0);
-          setProgress(0);
-          fetchPhotos();
-          setUploading(false);
-        }
-      );
+      // We won't show complex progress bars for both, just wait for them
+      setProgress(10);
+      await uploadBytesResumable(frontRef, croppedFrontBlob);
+      setProgress(50);
+      await uploadBytesResumable(backRef, croppedBackBlob);
+      setProgress(90);
+
+      const urlFront = await getDownloadURL(frontRef);
+      const urlBack = await getDownloadURL(backRef);
+      
+      await addDoc(collection(db, 'records'), {
+        urlFront: urlFront,
+        urlBack: urlBack,
+        recordName: recordName || 'Untitled Record',
+        details: details,
+        createdAt: serverTimestamp(),
+        uploadedBy: user.email
+      });
+      
+      resetForm();
+      fetchPhotos();
+      setUploading(false);
     } catch (err) {
       console.error(err);
-      setError('Error cropping or uploading the image.');
+      setError('Error cropping or uploading the images.');
       setUploading(false);
     }
+  };
+
+  const resetForm = () => {
+    setImageSrcFront(null);
+    setOriginalFileFront(null);
+    setZoomFront(1);
+    setRotationFront(0);
+    
+    setImageSrcBack(null);
+    setOriginalFileBack(null);
+    setZoomBack(1);
+    setRotationBack(0);
+    
+    setRecordName('');
+    setDetails('');
+    setProgress(0);
   };
 
   if (loading) {
@@ -191,7 +207,7 @@ function AdminDashboard() {
           <div className="glass" style={{ padding: '2rem', borderRadius: '16px', height: 'fit-content' }}>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Upload New Record</h3>
             
-            {error && <div style={{ color: '#ff4444', marginBottom: '1rem' }}>{error}</div>}
+            {error && <div style={{ color: '#ff4444', marginBottom: '1rem', padding: '1rem', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>{error}</div>}
             
             <form onSubmit={handleUpload}>
               <div style={{ marginBottom: '1.2rem' }}>
@@ -216,64 +232,82 @@ function AdminDashboard() {
                 />
               </div>
 
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Select Cover Image</label>
+              {/* Front Cover Input */}
+              <div style={{ marginBottom: '1.5rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>1. Select Front Cover Image</label>
                 <input 
                   type="file" 
                   accept="image/*"
-                  onChange={onFileChange}
+                  onChange={onFileChangeFront}
                   style={{ color: '#fff' }}
                 />
               </div>
 
-              {imageSrc && (
+              {imageSrcFront && (
                 <div style={{ marginBottom: '2rem' }}>
                   <div style={{ position: 'relative', width: '100%', height: '300px', background: '#333', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem' }}>
                     <Cropper
-                      image={imageSrc}
-                      crop={crop}
-                      zoom={zoom}
-                      rotation={rotation}
-                      aspect={1} // Square aspect ratio for records
-                      onCropChange={setCrop}
-                      onCropComplete={onCropComplete}
-                      onZoomChange={setZoom}
-                      onRotationChange={setRotation}
+                      image={imageSrcFront}
+                      crop={cropFront}
+                      zoom={zoomFront}
+                      rotation={rotationFront}
+                      aspect={1}
+                      onCropChange={setCropFront}
+                      onCropComplete={useCallback((_, pixels) => setCroppedAreaPixelsFront(pixels), [])}
+                      onZoomChange={setZoomFront}
+                      onRotationChange={setRotationFront}
                     />
                   </div>
-                  
                   <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Zoom</label>
-                    <input
-                      type="range"
-                      value={zoom}
-                      min={1}
-                      max={3}
-                      step={0.1}
-                      aria-labelledby="Zoom"
-                      onChange={(e) => setZoom(e.target.value)}
-                      style={{ width: '100%' }}
-                    />
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Zoom (Front)</label>
+                    <input type="range" value={zoomFront} min={1} max={3} step={0.1} onChange={(e) => setZoomFront(e.target.value)} style={{ width: '100%' }} />
                   </div>
-                  
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Rotation</label>
-                    <input
-                      type="range"
-                      value={rotation}
-                      min={0}
-                      max={360}
-                      step={1}
-                      aria-labelledby="Rotation"
-                      onChange={(e) => setRotation(e.target.value)}
-                      style={{ width: '100%' }}
-                    />
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Rotation (Front)</label>
+                    <input type="range" value={rotationFront} min={0} max={360} step={1} onChange={(e) => setRotationFront(e.target.value)} style={{ width: '100%' }} />
                   </div>
                 </div>
               )}
 
-              <button type="submit" className="btn-primary" disabled={uploading || !imageSrc} style={{ width: '100%', padding: '1rem' }}>
-                {uploading ? `Uploading... ${progress}%` : 'Crop & Upload Record'}
+              {/* Back Cover Input */}
+              <div style={{ marginBottom: '1.5rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>2. Select Back Cover Image</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={onFileChangeBack}
+                  style={{ color: '#fff' }}
+                />
+              </div>
+
+              {imageSrcBack && (
+                <div style={{ marginBottom: '2rem' }}>
+                  <div style={{ position: 'relative', width: '100%', height: '300px', background: '#333', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem' }}>
+                    <Cropper
+                      image={imageSrcBack}
+                      crop={cropBack}
+                      zoom={zoomBack}
+                      rotation={rotationBack}
+                      aspect={1}
+                      onCropChange={setCropBack}
+                      onCropComplete={useCallback((_, pixels) => setCroppedAreaPixelsBack(pixels), [])}
+                      onZoomChange={setZoomBack}
+                      onRotationChange={setRotationBack}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Zoom (Back)</label>
+                    <input type="range" value={zoomBack} min={1} max={3} step={0.1} onChange={(e) => setZoomBack(e.target.value)} style={{ width: '100%' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Rotation (Back)</label>
+                    <input type="range" value={rotationBack} min={0} max={360} step={1} onChange={(e) => setRotationBack(e.target.value)} style={{ width: '100%' }} />
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" className="btn-primary" disabled={uploading || !imageSrcFront || !imageSrcBack} style={{ width: '100%', padding: '1rem' }}>
+                {uploading ? `Processing...` : 'Crop & Upload Record'}
               </button>
             </form>
           </div>
@@ -282,17 +316,33 @@ function AdminDashboard() {
           <div className="glass" style={{ padding: '2rem', borderRadius: '16px', height: 'fit-content' }}>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Uploaded Records</h3>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
               {photos.length === 0 ? (
                 <p style={{ color: 'var(--text-secondary)' }}>No records uploaded yet.</p>
               ) : (
                 photos.map((photo) => (
-                  <div key={photo.id} style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '12px', overflow: 'hidden' }}>
-                    <img src={photo.url} alt={photo.recordName} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }} />
-                    <div style={{ padding: '1rem' }}>
-                      <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{photo.recordName}</h4>
-                      <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{photo.details}</p>
+                  <div key={photo.id} style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '12px', overflow: 'hidden', padding: '1rem' }}>
+                    <h4 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>{photo.recordName}</h4>
+                    
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Front</p>
+                        {/* Fallback to original url format if old records exist without urlFront/urlBack */}
+                        <img src={photo.urlFront || photo.url} alt="Front Cover" style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '8px' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Back</p>
+                        {photo.urlBack ? (
+                          <img src={photo.urlBack} alt="Back Cover" style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '8px' }} />
+                        ) : (
+                          <div style={{ width: '100%', aspectRatio: '1', background: '#222', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#666' }}>No Back</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{photo.details}</p>
                   </div>
                 ))
               )}
