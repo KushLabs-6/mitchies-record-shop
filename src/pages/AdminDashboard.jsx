@@ -286,7 +286,7 @@ function AdminDashboard() {
                       rotation={rotationFront}
                       aspect={1}
                       onCropChange={setCropFront}
-                      onCropComplete={useCallback((_, pixels) => setCroppedAreaPixelsFront(pixels), [])}
+                      onCropComplete={(_, pixels) => setCroppedAreaPixelsFront(pixels)}
                       onZoomChange={setZoomFront}
                       onRotationChange={setRotationFront}
                     />
@@ -323,7 +323,7 @@ function AdminDashboard() {
                       rotation={rotationBack}
                       aspect={1}
                       onCropChange={setCropBack}
-                      onCropComplete={useCallback((_, pixels) => setCroppedAreaPixelsBack(pixels), [])}
+                      onCropComplete={(_, pixels) => setCroppedAreaPixelsBack(pixels)}
                       onZoomChange={setZoomBack}
                       onRotationChange={setRotationBack}
                     />
