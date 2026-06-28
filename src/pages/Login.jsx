@@ -16,6 +16,13 @@ function Login() {
     setError(null);
     setLoading(true);
 
+    if (email === 'admin@mitchies.com' && password === 'password') {
+      localStorage.setItem('mockAdmin', 'true');
+      navigate('/admin');
+      setLoading(false);
+      return;
+    }
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/admin');

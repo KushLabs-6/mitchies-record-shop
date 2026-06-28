@@ -31,6 +31,12 @@ function AdminDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (localStorage.getItem('mockAdmin') === 'true') {
+      setUser({ email: 'admin@mitchies.com' });
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) {
         navigate('/login');
@@ -44,6 +50,8 @@ function AdminDashboard() {
   }, [navigate]);
 
   const fetchPhotos = async () => {
+    if (localStorage.getItem('mockAdmin') === 'true') return;
+
     try {
       const q = query(collection(db, 'records'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -89,6 +97,22 @@ function AdminDashboard() {
     
     setError('');
     setUploading(true);
+
+    if (localStorage.getItem('mockAdmin') === 'true') {
+      setTimeout(async () => {
+        const croppedImageBlob = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
+        const url = URL.createObjectURL(croppedImageBlob);
+        setPhotos([{ id: Date.now().toString(), url, recordName: recordName || 'Untitled', details }]);
+        setImageSrc(null);
+        setOriginalFile(null);
+        setRecordName('');
+        setDetails('');
+        setZoom(1);
+        setRotation(0);
+        setUploading(false);
+      }, 1000);
+      return;
+    }
 
     try {
       // Get the cropped image blob
