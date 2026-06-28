@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import RecordCard from '../components/RecordCard';
+import { db, isFirebaseConfigured } from '../firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 const INITIAL_RECORDS = [
   { id: 1, title: "Midnight Reflections", artist: "The Jazz Collective", price: 34.99, cover: "/jazz.png" },
@@ -15,6 +17,53 @@ const INITIAL_RECORDS = [
 function Home() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [records, setRecords] = useState(INITIAL_RECORDS);
+
+  useEffect(() => {
+    const loadRecords = async () => {
+      let uploaded = [];
+      if (isFirebaseConfigured) {
+        try {
+          const q = query(collection(db, 'records'), orderBy('createdAt', 'desc'));
+          const querySnapshot = await getDocs(q);
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            uploaded.push({
+              id: doc.id,
+              title: data.recordName,
+              artist: data.details,
+              price: 29.99,
+              cover: data.urlFront || data.url,
+              coverBack: data.urlBack
+            });
+          });
+        } catch (err) {
+          console.warn("Firestore fetch failed, falling back to localStorage", err);
+          uploaded = getLocalRecords();
+        }
+      } else {
+        uploaded = getLocalRecords();
+      }
+      setRecords([...uploaded, ...INITIAL_RECORDS]);
+    };
+    loadRecords();
+  }, []);
+
+  const getLocalRecords = () => {
+    try {
+      const local = JSON.parse(localStorage.getItem('mitchies_records') || '[]');
+      return local.map(r => ({
+        id: r.id,
+        title: r.recordName,
+        artist: r.details,
+        price: r.price || 29.99,
+        cover: r.urlFront,
+        coverBack: r.urlBack
+      }));
+    } catch (e) {
+      return [];
+    }
+  };
 
   const addToCart = (record) => {
     setCart([...cart, record]);
@@ -58,7 +107,7 @@ function Home() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: '2.5rem'
           }}>
-            {INITIAL_RECORDS.map(record => (
+            {records.map(record => (
               <RecordCard key={record.id} record={record} onAddToCart={addToCart} />
             ))}
           </div>

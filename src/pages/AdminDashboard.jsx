@@ -41,6 +41,7 @@ function AdminDashboard() {
   useEffect(() => {
     if (localStorage.getItem('mockAdmin') === 'true') {
       setUser({ email: 'admin@mitchies.com' });
+      fetchPhotos();
       setLoading(false);
       return;
     }
@@ -58,7 +59,15 @@ function AdminDashboard() {
   }, [navigate]);
 
   const fetchPhotos = async () => {
-    if (localStorage.getItem('mockAdmin') === 'true') return;
+    if (localStorage.getItem('mockAdmin') === 'true') {
+      try {
+        const local = JSON.parse(localStorage.getItem('mitchies_records') || '[]');
+        setPhotos(local);
+      } catch (e) {
+        setPhotos([]);
+      }
+      return;
+    }
 
     try {
       const q = query(collection(db, 'records'), orderBy('createdAt', 'desc'));
@@ -114,18 +123,42 @@ function AdminDashboard() {
     setUploading(true);
 
     if (localStorage.getItem('mockAdmin') === 'true') {
-      setTimeout(async () => {
+      try {
         const croppedFrontBlob = await getCroppedImg(imageSrcFront, croppedAreaPixelsFront, rotationFront);
         const croppedBackBlob = await getCroppedImg(imageSrcBack, croppedAreaPixelsBack, rotationBack);
         
-        const urlFront = URL.createObjectURL(croppedFrontBlob);
-        const urlBack = URL.createObjectURL(croppedBackBlob);
+        const blobToBase64 = (blob) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        };
+
+        const base64Front = await blobToBase64(croppedFrontBlob);
+        const base64Back = await blobToBase64(croppedBackBlob);
+
+        const localRecords = JSON.parse(localStorage.getItem('mitchies_records') || '[]');
+        const newRecord = {
+          id: Date.now().toString(),
+          recordName: recordName || 'Untitled',
+          details: details,
+          urlFront: base64Front,
+          urlBack: base64Back,
+          createdAt: new Date().toISOString()
+        };
+        localRecords.unshift(newRecord);
+        localStorage.setItem('mitchies_records', JSON.stringify(localRecords));
         
-        setPhotos([{ id: Date.now().toString(), urlFront, urlBack, recordName: recordName || 'Untitled', details }, ...photos]);
-        
+        setPhotos(localRecords);
         resetForm();
         setUploading(false);
-      }, 1000);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to crop or save mock images.');
+        setUploading(false);
+      }
       return;
     }
 

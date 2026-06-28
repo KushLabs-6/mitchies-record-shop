@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Navbar = ({ cartCount, onCartToggle }) => {
   return (
@@ -16,13 +17,16 @@ const Navbar = ({ cartCount, onCartToggle }) => {
       alignItems: 'center'
     }}>
       <div className="logo" style={{ fontSize: '1.5rem', fontWeight: '800' }}>
-        MITCHIE'S <span className="gold-text">RECORDS</span>
+        <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>
+          MITCHIE'S <span className="gold-text">RECORDS</span>
+        </Link>
       </div>
       
-      <div style={{ display: 'flex', gap: '2rem', fontWeight: '500' }}>
-        <a href="#shop">Shop</a>
-        <a href="#new">New Arrivals</a>
-        <a href="#about">Our Story</a>
+      <div style={{ display: 'flex', gap: '2rem', fontWeight: '500', alignItems: 'center' }}>
+        <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</Link>
+        <a href="/#shop" style={{ color: 'inherit', textDecoration: 'none' }}>Shop</a>
+        <a href="/#about" style={{ color: 'inherit', textDecoration: 'none' }}>Our Story</a>
+        <Link to="/admin" style={{ color: 'inherit', textDecoration: 'none', border: '1px solid var(--accent-gold)', padding: '0.3rem 0.8rem', borderRadius: '4px' }}>Admin</Link>
       </div>
 
       <div style={{ position: 'relative', cursor: 'pointer' }} onClick={onCartToggle}>
