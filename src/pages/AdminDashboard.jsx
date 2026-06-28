@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db, storage } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, addDoc, getDocs, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
@@ -16,6 +16,7 @@ function AdminDashboard() {
   // Upload State
   const [recordName, setRecordName] = useState('');
   const [details, setDetails] = useState('');
+  const [price, setPrice] = useState('');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
@@ -144,6 +145,7 @@ function AdminDashboard() {
           id: Date.now().toString(),
           recordName: recordName || 'Untitled',
           details: details,
+          price: price || '29.99',
           urlFront: base64Front,
           urlBack: base64Back,
           createdAt: new Date().toISOString()
@@ -188,6 +190,7 @@ function AdminDashboard() {
         urlBack: urlBack,
         recordName: recordName || 'Untitled Record',
         details: details,
+        price: price || '29.99',
         createdAt: serverTimestamp(),
         uploadedBy: user.email
       });
@@ -215,7 +218,27 @@ function AdminDashboard() {
     
     setRecordName('');
     setDetails('');
+    setPrice('');
     setProgress(0);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this record?")) {
+      if (localStorage.getItem('mockAdmin') === 'true') {
+        const localRecords = JSON.parse(localStorage.getItem('mitchies_records') || '[]');
+        const updated = localRecords.filter(r => r.id !== id);
+        localStorage.setItem('mitchies_records', JSON.stringify(updated));
+        setPhotos(updated);
+      } else {
+        try {
+          await deleteDoc(doc(db, 'records', id));
+          fetchPhotos();
+        } catch (err) {
+          console.error(err);
+          setError('Failed to delete record from database.');
+        }
+      }
+    }
   };
 
   if (loading) {
@@ -262,6 +285,19 @@ function AdminDashboard() {
                   onChange={(e) => setDetails(e.target.value)}
                   placeholder="e.g. The Jazz Collective"
                   style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#fff', minHeight: '80px' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.2rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Price ($ USD)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={price} 
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="e.g. 29.99"
+                  required
+                  style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
                 />
               </div>
 
@@ -375,7 +411,17 @@ function AdminDashboard() {
                       </div>
                     </div>
                     
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{photo.details}</p>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>{photo.details}</p>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
+                      <span className="gold-text" style={{ fontWeight: '700' }}>${photo.price || '29.99'}</span>
+                      <button 
+                        onClick={() => handleDelete(photo.id)} 
+                        style={{ background: '#ff4444', color: '#fff', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
