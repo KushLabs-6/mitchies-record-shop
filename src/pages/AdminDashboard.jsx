@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db, storage } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, addDoc, getDocs, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '../utils/cropImage';
 import Navbar from '../components/Navbar';
 
 function AdminDashboard() {
@@ -12,12 +14,19 @@ function AdminDashboard() {
   const [photos, setPhotos] = useState([]);
   
   // Upload State
-  const [file, setFile] = useState(null);
-  const [albumName, setAlbumName] = useState('');
-  const [caption, setCaption] = useState('');
+  const [recordName, setRecordName] = useState('');
+  const [details, setDetails] = useState('');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+
+  // Cropper State
+  const [imageSrc, setImageSrc] = useState(null);
+  const [originalFile, setOriginalFile] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const navigate = useNavigate();
 
@@ -36,8 +45,7 @@ function AdminDashboard() {
 
   const fetchPhotos = async () => {
     try {
-      // Create 'photos' collection if it doesn't exist
-      const q = query(collection(db, 'photos'), orderBy('createdAt', 'desc'));
+      const q = query(collection(db, 'records'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       const fetchedPhotos = [];
       querySnapshot.forEach((doc) => {
@@ -45,7 +53,7 @@ function AdminDashboard() {
       });
       setPhotos(fetchedPhotos);
     } catch (err) {
-      console.warn("Could not fetch photos. Make sure Firebase rules allow read access.", err);
+      console.warn("Could not fetch records. Make sure Firebase rules allow read access.", err);
     }
   };
 
@@ -54,55 +62,87 @@ function AdminDashboard() {
     navigate('/');
   };
 
+  const onFileChange = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setOriginalFile(file);
+      let imageDataUrl = await readFile(file);
+      setImageSrc(imageDataUrl);
+    }
+  };
+
+  const readFile = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file) return setError('Please select an image file first.');
+    if (!imageSrc || !croppedAreaPixels) return setError('Please select and crop an image.');
     
     setError('');
     setUploading(true);
 
-    // Create a unique filename
-    const filename = `${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, `albums/${albumName || 'general'}/${filename}`);
-    
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    try {
+      // Get the cropped image blob
+      const croppedImageBlob = await getCroppedImg(
+        imageSrc,
+        croppedAreaPixels,
+        rotation
+      );
 
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const prog = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        setProgress(prog);
-      },
-      (err) => {
-        console.error(err);
-        setError('Failed to upload image.');
-        setUploading(false);
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        
-        try {
-          await addDoc(collection(db, 'photos'), {
+      // Create a unique filename
+      const filename = `${Date.now()}_cropped_${originalFile.name}`;
+      const storageRef = ref(storage, `records/${filename}`);
+      
+      const uploadTask = uploadBytesResumable(storageRef, croppedImageBlob);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const prog = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          setProgress(prog);
+        },
+        (err) => {
+          console.error(err);
+          setError('Failed to upload image.');
+          setUploading(false);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          
+          await addDoc(collection(db, 'records'), {
             url: downloadURL,
-            album: albumName || 'general',
-            caption: caption,
+            recordName: recordName || 'Untitled Record',
+            details: details,
             createdAt: serverTimestamp(),
             uploadedBy: user.email
           });
           
-          setFile(null);
-          setAlbumName('');
-          setCaption('');
+          // Reset form
+          setImageSrc(null);
+          setOriginalFile(null);
+          setRecordName('');
+          setDetails('');
+          setZoom(1);
+          setRotation(0);
           setProgress(0);
           fetchPhotos();
-        } catch (err) {
-          console.error("Error adding document: ", err);
-          setError('Failed to save photo info to database.');
-        } finally {
           setUploading(false);
         }
-      }
-    );
+      );
+    } catch (err) {
+      console.error(err);
+      setError('Error cropping or uploading the image.');
+      setUploading(false);
+    }
   };
 
   if (loading) {
@@ -121,68 +161,113 @@ function AdminDashboard() {
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
           
-          {/* Upload Form */}
+          {/* Upload & Edit Form */}
           <div className="glass" style={{ padding: '2rem', borderRadius: '16px', height: 'fit-content' }}>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Upload Photo</h3>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Upload New Record</h3>
             
             {error && <div style={{ color: '#ff4444', marginBottom: '1rem' }}>{error}</div>}
             
             <form onSubmit={handleUpload}>
               <div style={{ marginBottom: '1.2rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Album Name</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Record Name</label>
                 <input 
                   type="text" 
-                  value={albumName} 
-                  onChange={(e) => setAlbumName(e.target.value)}
-                  placeholder="e.g. In-Store Events"
+                  value={recordName} 
+                  onChange={(e) => setRecordName(e.target.value)}
+                  placeholder="e.g. Midnight Reflections"
+                  required
                   style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
                 />
               </div>
 
               <div style={{ marginBottom: '1.2rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Caption / Details</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Artist / Details</label>
                 <textarea 
-                  value={caption} 
-                  onChange={(e) => setCaption(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#fff', minHeight: '100px' }}
+                  value={details} 
+                  onChange={(e) => setDetails(e.target.value)}
+                  placeholder="e.g. The Jazz Collective"
+                  style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#fff', minHeight: '80px' }}
                 />
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Select Image</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Select Cover Image</label>
                 <input 
                   type="file" 
                   accept="image/*"
-                  onChange={(e) => setFile(e.target.files[0])}
-                  required
+                  onChange={onFileChange}
                   style={{ color: '#fff' }}
                 />
               </div>
 
-              <button type="submit" className="btn-primary" disabled={uploading} style={{ width: '100%', padding: '1rem' }}>
-                {uploading ? `Uploading... ${progress}%` : 'Upload to Album'}
+              {imageSrc && (
+                <div style={{ marginBottom: '2rem' }}>
+                  <div style={{ position: 'relative', width: '100%', height: '300px', background: '#333', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem' }}>
+                    <Cropper
+                      image={imageSrc}
+                      crop={crop}
+                      zoom={zoom}
+                      rotation={rotation}
+                      aspect={1} // Square aspect ratio for records
+                      onCropChange={setCrop}
+                      onCropComplete={onCropComplete}
+                      onZoomChange={setZoom}
+                      onRotationChange={setRotation}
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Zoom</label>
+                    <input
+                      type="range"
+                      value={zoom}
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      aria-labelledby="Zoom"
+                      onChange={(e) => setZoom(e.target.value)}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Rotation</label>
+                    <input
+                      type="range"
+                      value={rotation}
+                      min={0}
+                      max={360}
+                      step={1}
+                      aria-labelledby="Rotation"
+                      onChange={(e) => setRotation(e.target.value)}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" className="btn-primary" disabled={uploading || !imageSrc} style={{ width: '100%', padding: '1rem' }}>
+                {uploading ? `Uploading... ${progress}%` : 'Crop & Upload Record'}
               </button>
             </form>
           </div>
 
           {/* Photo Gallery */}
-          <div className="glass" style={{ padding: '2rem', borderRadius: '16px' }}>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Manage Albums</h3>
+          <div className="glass" style={{ padding: '2rem', borderRadius: '16px', height: 'fit-content' }}>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Uploaded Records</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
               {photos.length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)' }}>No photos uploaded yet.</p>
+                <p style={{ color: 'var(--text-secondary)' }}>No records uploaded yet.</p>
               ) : (
                 photos.map((photo) => (
                   <div key={photo.id} style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '12px', overflow: 'hidden' }}>
-                    <img src={photo.url} alt={photo.caption} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />
+                    <img src={photo.url} alt={photo.recordName} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }} />
                     <div style={{ padding: '1rem' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--primary-color)', background: 'rgba(255,225,0,0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
-                        {photo.album}
-                      </span>
-                      <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{photo.caption}</p>
+                      <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{photo.recordName}</h4>
+                      <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{photo.details}</p>
                     </div>
                   </div>
                 ))
