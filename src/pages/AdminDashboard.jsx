@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { uploadToCloudinary } from '../utils/cloudinary';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
@@ -183,6 +183,7 @@ function AdminDashboard() {
         recordName: recordName || 'Untitled Record',
         details: details,
         price: price || '29.99',
+        outOfStock: false,
         createdAt: serverTimestamp(),
         uploadedBy: user.email
       });
@@ -229,6 +230,25 @@ function AdminDashboard() {
           console.error(err);
           setError('Failed to delete record from database.');
         }
+      }
+    }
+  };
+
+  const handleToggleStock = async (id, currentStatus) => {
+    if (localStorage.getItem('mockAdmin') === 'true') {
+      const localRecords = JSON.parse(localStorage.getItem('mitchies_records') || '[]');
+      const updated = localRecords.map(r => r.id === id ? { ...r, outOfStock: !currentStatus } : r);
+      localStorage.setItem('mitchies_records', JSON.stringify(updated));
+      setPhotos(updated);
+    } else {
+      try {
+        await updateDoc(doc(db, 'records', id), {
+          outOfStock: !currentStatus
+        });
+        fetchPhotos();
+      } catch (err) {
+        console.error(err);
+        setError('Failed to update stock status.');
       }
     }
   };
@@ -411,13 +431,24 @@ function AdminDashboard() {
                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>{photo.details}</p>
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
-                      <span className="gold-text" style={{ fontWeight: '700' }}>${photo.price || '29.99'}</span>
-                      <button 
-                        onClick={() => handleDelete(photo.id)} 
-                        style={{ background: '#ff4444', color: '#fff', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
-                      >
-                        Delete
-                      </button>
+                      <span className="gold-text" style={{ fontWeight: '700' }}>
+                        ${photo.price || '29.99'} 
+                        {photo.outOfStock && <span style={{ color: '#ff4444', fontSize: '0.8rem', marginLeft: '0.5rem', textTransform: 'uppercase' }}>(Out of Stock)</span>}
+                      </span>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                          onClick={() => handleToggleStock(photo.id, photo.outOfStock)} 
+                          style={{ background: 'var(--glass-border)', color: '#fff', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
+                        >
+                          {photo.outOfStock ? 'Mark in Stock' : 'Mark Out of Stock'}
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(photo.id)} 
+                          style={{ background: '#ff4444', color: '#fff', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))

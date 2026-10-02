@@ -27,7 +27,9 @@ const RecordCard = ({ record, onAddToCart }) => {
         overflow: 'hidden',
         marginBottom: '1rem',
         boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-        position: 'relative'
+        position: 'relative',
+        filter: record.outOfStock ? 'grayscale(100%) opacity(60%)' : 'none',
+        transition: 'var(--transition)'
       }}>
         <img 
           src={record.cover} 
@@ -67,16 +69,34 @@ const RecordCard = ({ record, onAddToCart }) => {
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span className="gold-text" style={{ fontWeight: '800', fontSize: '1.1rem' }}>${record.price}</span>
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToCart(record);
-          }}
-          className="btn-primary" 
-          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-        >
-          Add to Cart
-        </button>
+        {record.outOfStock ? (
+          <button 
+            disabled
+            style={{ 
+              padding: '0.5rem 1rem', 
+              fontSize: '0.9rem', 
+              background: 'rgba(255, 68, 68, 0.1)', 
+              color: '#ff4444', 
+              border: '1px solid #ff4444', 
+              borderRadius: '8px',
+              cursor: 'not-allowed',
+              fontWeight: '600'
+            }}
+          >
+            Out of Stock
+          </button>
+        ) : (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(record);
+            }}
+            className="btn-primary" 
+            style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+          >
+            Add to Cart
+          </button>
+        )}
       </div>
     </div>
   );

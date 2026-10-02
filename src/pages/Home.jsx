@@ -34,7 +34,8 @@ function Home() {
               artist: data.details,
               price: 29.99,
               cover: data.urlFront || data.url,
-              coverBack: data.urlBack
+              coverBack: data.urlBack,
+              outOfStock: data.outOfStock
             });
           });
         } catch (err) {
