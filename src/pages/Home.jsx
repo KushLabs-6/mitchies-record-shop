@@ -6,12 +6,12 @@ import { db, isFirebaseConfigured } from '../firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 const INITIAL_RECORDS = [
-  { id: 1, title: "Exodus", artist: "Bob Marley & The Wailers", price: 34.99, cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=800" },
-  { id: 2, title: "Super Ape", artist: "The Upsetters", price: 45.00, cover: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&q=80&w=800" },
-  { id: 3, title: "Funky Kingston", artist: "Toots & The Maytals", price: 29.99, cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800" },
-  { id: 4, title: "Marcus Garvey", artist: "Burning Spear", price: 32.99, cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" },
-  { id: 5, title: "Two Sevens Clash", artist: "Culture", price: 28.50, cover: "https://images.unsplash.com/photo-1533174000253-1d5940d05c23?auto=format&fit=crop&q=80&w=800" },
-  { id: 6, title: "Heart of the Congos", artist: "The Congos", price: 39.99, cover: "https://images.unsplash.com/photo-1603048297172-c92544798d5e?auto=format&fit=crop&q=80&w=800" },
+  { id: 1, title: "Exodus", artist: "Bob Marley & The Wailers", price: 34.99, cover: "https://upload.wikimedia.org/wikipedia/en/a/a6/Bob_Marley_and_the_Wailers_-_Exodus.png" },
+  { id: 2, title: "Super Ape", artist: "The Upsetters", price: 45.00, cover: "https://upload.wikimedia.org/wikipedia/en/7/7b/The_Upsetters_-_Super_Ape.jpg" },
+  { id: 3, title: "Funky Kingston", artist: "Toots & The Maytals", price: 29.99, cover: "https://upload.wikimedia.org/wikipedia/en/9/91/Funky_Kingston.jpg" },
+  { id: 4, title: "Marcus Garvey", artist: "Burning Spear", price: 32.99, cover: "https://upload.wikimedia.org/wikipedia/en/1/15/Marcus_garvey_burning_spear_album.jpg" },
+  { id: 5, title: "Two Sevens Clash", artist: "Culture", price: 28.50, cover: "https://upload.wikimedia.org/wikipedia/en/1/1c/Two_Sevens_Clash.jpg" },
+  { id: 6, title: "Heart of the Congos", artist: "The Congos", price: 39.99, cover: "https://upload.wikimedia.org/wikipedia/en/7/77/Heart_of_the_congos.jpg" },
 ];
 
 function Home() {
