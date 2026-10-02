@@ -26,6 +26,7 @@ const Navbar = ({ cartCount, onCartToggle }) => {
         <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</Link>
         <a href="/#shop" style={{ color: 'inherit', textDecoration: 'none' }}>Shop</a>
         <a href="/#about" style={{ color: 'inherit', textDecoration: 'none' }}>Our Story</a>
+        <Link to="/feed" style={{ color: 'inherit', textDecoration: 'none' }}>Social Feed</Link>
         <Link to="/admin" style={{ color: 'inherit', textDecoration: 'none', border: '1px solid var(--accent-gold)', padding: '0.3rem 0.8rem', borderRadius: '4px' }}>Admin</Link>
       </div>
 
