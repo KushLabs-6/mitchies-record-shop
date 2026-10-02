@@ -112,14 +112,23 @@ function Feed() {
         
         <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Website Created By</p>
-          <a href="https://itsjusmarketing.com" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block' }}>
-            <img 
-              src="/itsjusmarketing-logo.png" 
-              alt="Its Jus Marketing" 
-              style={{ height: '40px', opacity: 0.7, filter: 'grayscale(100%)', transition: 'all 0.3s ease' }} 
-              onMouseOver={e => { e.currentTarget.style.filter = 'none'; e.currentTarget.style.opacity = 1; }} 
-              onMouseOut={e => { e.currentTarget.style.filter = 'grayscale(100%)'; e.currentTarget.style.opacity = 0.7; }} 
-            />
+          <a href="https://itsjusmarketing.com" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', textDecoration: 'none' }}>
+            <div style={{ 
+              color: '#fff', 
+              fontSize: '1.2rem', 
+              fontWeight: '800', 
+              letterSpacing: '1px', 
+              fontFamily: 'monospace',
+              border: '2px solid #fff',
+              padding: '0.5rem 1rem',
+              borderRadius: '4px',
+              transition: 'var(--transition)' 
+            }}
+            onMouseOver={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+            onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fff'; }}
+            >
+              ITS JUS MARKETING
+            </div>
           </a>
         </div>
       </footer>
