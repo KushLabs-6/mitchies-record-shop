@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db, storage } from '../firebase';
+import { auth, db } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { uploadToCloudinary } from '../utils/cloudinary';
 import Navbar from '../components/Navbar';
 
 function AdminEvents() {
@@ -88,10 +88,7 @@ function AdminEvents() {
     }
 
     try {
-      const filename = `${Date.now()}_${originalFile.name}`;
-      const imgRef = ref(storage, `events/${filename}`);
-      await uploadBytesResumable(imgRef, originalFile);
-      const url = await getDownloadURL(imgRef);
+      const url = await uploadToCloudinary(originalFile, 'events');
       
       await addDoc(collection(db, 'store_events'), {
         title: title || 'Untitled Event',

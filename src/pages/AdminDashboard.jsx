@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db, storage } from '../firebase';
+import { auth, db } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { uploadToCloudinary } from '../utils/cloudinary';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
 import Navbar from '../components/Navbar';
@@ -167,23 +167,15 @@ function AdminDashboard() {
     try {
       // 1. Process Front Cover
       const croppedFrontBlob = await getCroppedImg(imageSrcFront, croppedAreaPixelsFront, rotationFront);
-      const frontFilename = `${Date.now()}_front_${originalFileFront.name}`;
-      const frontRef = ref(storage, `records/${frontFilename}`);
       
       // 2. Process Back Cover
       const croppedBackBlob = await getCroppedImg(imageSrcBack, croppedAreaPixelsBack, rotationBack);
-      const backFilename = `${Date.now()}_back_${originalFileBack.name}`;
-      const backRef = ref(storage, `records/${backFilename}`);
 
-      // We won't show complex progress bars for both, just wait for them
       setProgress(10);
-      await uploadBytesResumable(frontRef, croppedFrontBlob);
+      const urlFront = await uploadToCloudinary(croppedFrontBlob, 'records');
       setProgress(50);
-      await uploadBytesResumable(backRef, croppedBackBlob);
+      const urlBack = await uploadToCloudinary(croppedBackBlob, 'records');
       setProgress(90);
-
-      const urlFront = await getDownloadURL(frontRef);
-      const urlBack = await getDownloadURL(backRef);
       
       await addDoc(collection(db, 'records'), {
         urlFront: urlFront,
