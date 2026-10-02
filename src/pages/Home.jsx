@@ -115,26 +115,52 @@ function Home() {
         </section>
 
         <section id="about" style={{ padding: '8rem 0', background: 'var(--bg-secondary)' }}>
-          <div className="container" style={{ display: 'flex', gap: '4rem', alignItems: 'center' }}>
-            <div style={{ flex: 1 }}>
+          <div className="container" style={{ display: 'flex', gap: '4rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 340px' }}>
               <img 
-                src="/hero.png" 
-                alt="About Mitchie's" 
-                style={{ width: '100%', borderRadius: '24px', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }} 
+                src="http://web5.jamaica-gleaner.com/sites/default/files/media/article_images/2026/02/26/3361175/8450902.jpg"
+                alt="Ainsworth 'Mitchie' Williams at Mitchie's Record Shop"
+                style={{ width: '100%', borderRadius: '24px', boxShadow: '0 30px 60px rgba(0,0,0,0.5)', objectFit: 'cover' }} 
               />
-            </div>
-            <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>Our <span className="gold-text">Story.</span></h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '2rem' }}>
-                Mitchie's Record Shop began with a simple passion: the pursuit of pure sound. 
-                We believe that vinyl isn't just a format; it's an experience. 
-                Our team scours the globe to find the most authentic pressings and rarest tracks, 
-                ensuring that every record in our shop meets the highest standards of quality.
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.75rem', textAlign: 'center', fontStyle: 'italic' }}>
+                Ainsworth 'Mitchie' Williams at Mitchie's Record Shop, 136D Orange Street, downtown Kingston. — Photo: Contributed
               </p>
-              <button className="glass" style={{ padding: '1rem 2rem', borderRadius: '8px', color: '#fff' }}>Read More</button>
+            </div>
+            <div style={{ flex: '1 1 380px' }}>
+              <p style={{ color: 'var(--gold)', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>
+                📍 136D Orange Street — Beat Street — Downtown Kingston
+              </p>
+              <h2 style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>Our <span className="gold-text">Story.</span></h2>
+
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
+                On the historic stretch of Orange Street — famously known as <strong style={{ color: '#fff' }}>Beat Street</strong> — a new chapter in Jamaica's reggae legacy is unfolding. Directly across from Ibo Spice, Mitchie has officially opened the doors to <strong style={{ color: '#fff' }}>Mitchie's Record Shop</strong>, planting fresh roots in one of the most culturally significant corridors in reggae history.
+              </p>
+
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
+                More than a shop owner, <strong style={{ color: '#fff' }}>Ainsworth "Mitchie" Williams</strong> is an artiste, producer and DJ whose life revolves around reggae music. His space reflects his journey — one built on relationships, culture and consistency. Friends and fellow music figures such as <em>Vetta, DJ Yumi from Sun City Radio, Big Youth and Jah Mikey</em> are known to regularly pass through the shop, reinforcing its role as a living link between reggae's foundation and its ongoing evolution.
+              </p>
+
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
+                Every <strong style={{ color: '#fff' }}>Friday from 1:00 p.m. to 7:00 p.m.</strong>, Mitchie hosts <strong style={{ color: '#fff' }}>Beat Street Fridays</strong> — a weekly gathering featuring live DJ juggling, classic vinyl spins and exclusive dub plays. Patrons can grab beverages from Gussi Place next door and enjoy ital meals from Ibo Spice, blending music, food and community into one authentic Kingston experience.
+              </p>
+
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '2.5rem' }}>
+                In an age dominated by digital streaming, Mitchie's commitment to vinyl culture stands as a reminder that <em>reggae's heartbeat still pulses strongest where it began.</em> On Beat Street, the music never stopped.
+              </p>
+
+              <a 
+                href="https://web5.jamaica-gleaner.com/article/news/20260227/new-beginnings-mitchie"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+                style={{ display: 'inline-block', padding: '1rem 2rem', borderRadius: '8px', textDecoration: 'none', fontSize: '1rem', fontWeight: '600' }}
+              >
+                📰 Read the Official Story — Jamaica Gleaner
+              </a>
             </div>
           </div>
         </section>
+
       </main>
 
       {/* Cart Sidebar */}
