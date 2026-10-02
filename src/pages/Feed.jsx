@@ -105,6 +105,22 @@ function InstagramEmbed() {
   );
 }
 
+// ─── Static public feed cards (pinned from the Public Feed folder) ─────────────
+const PINNED_EVENTS = [
+  {
+    id: 'jam-sessions',
+    title: "Mitchie's Record Shop — Jam Sessions",
+    category: 'JAM SESSIONS',
+    url: '/event-jam-sessions.png',
+  },
+  {
+    id: 'dj-booking',
+    title: 'DJ Bookings — Mitchie Williams',
+    category: 'DJ BOOKINGS',
+    url: '/event-dj-booking.jpg',
+  },
+];
+
 // ─── Store Events section ──────────────────────────────────────────────────────
 function StoreEvents() {
   const [events, setEvents] = useState([]);
@@ -112,7 +128,6 @@ function StoreEvents() {
 
   useEffect(() => {
     if (!isFirebaseConfigured) {
-      // Fall back to localStorage
       try {
         const local = JSON.parse(localStorage.getItem('mitchies_events') || '[]');
         setEvents(local);
@@ -135,7 +150,6 @@ function StoreEvents() {
       },
       (err) => {
         console.warn('Could not fetch store events:', err);
-        // Fall back to localStorage
         try {
           const local = JSON.parse(localStorage.getItem('mitchies_events') || '[]');
           setEvents(local);
@@ -149,52 +163,98 @@ function StoreEvents() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
-    return (
-      <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>
-        Loading events...
-      </p>
-    );
-  }
-
-  if (events.length === 0) {
-    return (
-      <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>
-        No events posted yet. Check back soon!
-      </p>
-    );
-  }
+  const allCards = [...PINNED_EVENTS, ...events];
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: '2rem',
-        width: '100%',
-      }}
-    >
-      {events.map((event) => (
-        <div
-          key={event.id}
-          className="glass"
-          style={{ borderRadius: '16px', overflow: 'hidden' }}
-        >
-          {event.url && (
-            <img
-              src={event.url}
-              alt={event.title}
-              style={{ width: '100%', height: '220px', objectFit: 'cover' }}
-            />
-          )}
-          <div style={{ padding: '1.5rem' }}>
-            <h4 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>{event.title}</h4>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-              {event.description}
-            </p>
+    <div style={{ width: '100%' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: '2rem',
+          width: '100%',
+        }}
+      >
+        {allCards.map((event) => (
+          <div
+            key={event.id}
+            style={{
+              borderRadius: '16px',
+              overflow: 'hidden',
+              background: '#000',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Styled title banner above the image */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #1a1a1a 0%, #000 100%)',
+                borderBottom: '2px solid var(--accent-gold)',
+                padding: '1rem 1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.25rem',
+              }}
+            >
+              {event.category && (
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: '800',
+                    letterSpacing: '0.15em',
+                    color: 'var(--accent-gold)',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {event.category}
+                </span>
+              )}
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: '1.15rem',
+                  fontWeight: '700',
+                  color: '#fff',
+                  lineHeight: 1.3,
+                }}
+              >
+                {event.title}
+              </h3>
+            </div>
+
+            {/* Image */}
+            {event.url && (
+              <img
+                src={event.url}
+                alt={event.title}
+                style={{
+                  width: '100%',
+                  aspectRatio: '1 / 1',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+            )}
+
+            {/* Optional description for admin-posted events */}
+            {event.description && (
+              <div style={{ padding: '1rem 1.5rem', background: '#111' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+                  {event.description}
+                </p>
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      {loading && (
+        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginTop: '2rem' }}>
+          Loading more events...
+        </p>
+      )}
     </div>
   );
 }

@@ -16,9 +16,19 @@ const Navbar = ({ cartCount, onCartToggle }) => {
       justifyContent: 'space-between',
       alignItems: 'center'
     }}>
-      <div className="logo" style={{ fontSize: '1.5rem', fontWeight: '800' }}>
-        <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>
-          MITCH'S <span className="gold-text">RECORD SHOP</span>
+      <div className="logo" style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img
+            src="/logo.png"
+            alt="Mitchie's Record Shop"
+            style={{
+              height: '56px',
+              width: 'auto',
+              background: '#000',
+              borderRadius: '6px',
+              padding: '2px 8px',
+            }}
+          />
         </Link>
       </div>
       
