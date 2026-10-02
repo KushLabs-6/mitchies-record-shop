@@ -6,12 +6,12 @@ import { db, isFirebaseConfigured } from '../firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 const INITIAL_RECORDS = [
-  { id: 1, title: "Midnight Reflections", artist: "The Jazz Collective", price: 34.99, cover: "/jazz.png" },
-  { id: 2, title: "Vintage Soul", artist: "Mitchie & The Harmony", price: 29.99, cover: "/soul.png" },
-  { id: 3, title: "Neon Horizon", artist: "Synth Theory", price: 39.99, cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=800" },
-  { id: 4, title: "Roots & Culture", artist: "Island Vibrations", price: 24.99, cover: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&q=80&w=800" },
-  { id: 5, title: "Electric Dreams", artist: "Voltage Pulse", price: 32.99, cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800" },
-  { id: 6, title: "Starlight Symphony", artist: "Orchestral Manoeuvres", price: 44.99, cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" },
+  { id: 1, title: "Exodus", artist: "Bob Marley & The Wailers", price: 34.99, cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=800" },
+  { id: 2, title: "Super Ape", artist: "The Upsetters", price: 45.00, cover: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&q=80&w=800" },
+  { id: 3, title: "Funky Kingston", artist: "Toots & The Maytals", price: 29.99, cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800" },
+  { id: 4, title: "Marcus Garvey", artist: "Burning Spear", price: 32.99, cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800" },
+  { id: 5, title: "Two Sevens Clash", artist: "Culture", price: 28.50, cover: "https://images.unsplash.com/photo-1533174000253-1d5940d05c23?auto=format&fit=crop&q=80&w=800" },
+  { id: 6, title: "Heart of the Congos", artist: "The Congos", price: 39.99, cover: "https://images.unsplash.com/photo-1603048297172-c92544798d5e?auto=format&fit=crop&q=80&w=800" },
 ];
 
 function Home() {
