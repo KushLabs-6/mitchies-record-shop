@@ -18,7 +18,7 @@ const Navbar = ({ cartCount, onCartToggle }) => {
     }}>
       <div className="logo" style={{ fontSize: '1.5rem', fontWeight: '800' }}>
         <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>
-          MITCHIE'S <span className="gold-text">RECORDS</span>
+          MITCH'S <span className="gold-text">RECORD SHOP</span>
         </Link>
       </div>
       

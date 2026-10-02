@@ -252,9 +252,14 @@ function AdminDashboard() {
       <main className="container" style={{ padding: '4rem 0', flex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
           <h2 style={{ fontSize: '2.5rem' }}>Admin <span className="gold-text">Portal</span></h2>
-          <button onClick={handleLogout} className="glass" style={{ padding: '0.8rem 1.5rem', color: '#fff', borderRadius: '8px' }}>
-            Logout
-          </button>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button onClick={() => navigate('/admin/events')} className="glass" style={{ padding: '0.8rem 1.5rem', color: '#fff', borderRadius: '8px', cursor: 'pointer' }}>
+              Events Admin
+            </button>
+            <button onClick={handleLogout} className="glass" style={{ padding: '0.8rem 1.5rem', color: '#fff', borderRadius: '8px' }}>
+              Logout
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
