@@ -194,6 +194,19 @@ function Home() {
           <a href="https://share.google/tEF7S6WTCgaIMjTyO" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Google Business</a>
         </div>
         <p style={{ color: 'var(--text-secondary)' }}>&copy; 2026 Mitchie's Record Shop. All rights reserved.</p>
+        
+        <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Website Created By</p>
+          <a href="https://itsjusmarketing.com" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block' }}>
+            <img 
+              src="/itsjusmarketing-logo.png" 
+              alt="Its Jus Marketing" 
+              style={{ height: '40px', opacity: 0.7, filter: 'grayscale(100%)', transition: 'all 0.3s ease' }} 
+              onMouseOver={e => { e.currentTarget.style.filter = 'none'; e.currentTarget.style.opacity = 1; }} 
+              onMouseOut={e => { e.currentTarget.style.filter = 'grayscale(100%)'; e.currentTarget.style.opacity = 0.7; }} 
+            />
+          </a>
+        </div>
       </footer>
     </div>
   );
