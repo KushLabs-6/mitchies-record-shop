@@ -18,19 +18,12 @@ function AdminEvents() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem('mockAdmin') === 'true') {
-      setUser({ email: 'admin@mitchies.com' });
+    if (localStorage.getItem('isAdmin') !== 'true' && localStorage.getItem('mockAdmin') !== 'true') {
+      navigate('/login');
+    } else {
+      setUser({ email: 'admin' });
       fetchEvents();
-      return;
     }
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) navigate('/login');
-      else {
-        setUser(currentUser);
-        fetchEvents();
-      }
-    });
-    return () => unsubscribe();
   }, [navigate]);
 
   const fetchEvents = async () => {

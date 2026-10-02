@@ -40,23 +40,13 @@ function AdminDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem('mockAdmin') === 'true') {
-      setUser({ email: 'admin@mitchies.com' });
+    if (localStorage.getItem('isAdmin') !== 'true' && localStorage.getItem('mockAdmin') !== 'true') {
+      navigate('/login');
+    } else {
+      setUser({ email: 'admin' });
       fetchPhotos();
-      setLoading(false);
-      return;
     }
-
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) {
-        navigate('/login');
-      } else {
-        setUser(currentUser);
-        fetchPhotos();
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    setLoading(false);
   }, [navigate]);
 
   const fetchPhotos = async () => {
@@ -84,7 +74,8 @@ function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    signOut(auth);
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('mockAdmin');
     navigate('/');
   };
 

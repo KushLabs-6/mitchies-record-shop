@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInAnonymously } from 'firebase/auth';
 import { auth } from '../firebase';
 import Navbar from '../components/Navbar';
 
 function Login() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -16,22 +16,13 @@ function Login() {
     setError(null);
     setLoading(true);
 
-    if (email === 'admin@mitchies.com' && password === 'password') {
-      localStorage.setItem('mockAdmin', 'true');
+    if (username === 'itsjusmarketing' && password === 'admin2026') {
+      localStorage.setItem('isAdmin', 'true');
       navigate('/admin');
-      setLoading(false);
-      return;
+    } else {
+      setError('Invalid username or password.');
     }
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/admin');
-    } catch (err) {
-      console.error(err);
-      setError('Failed to login. Check your credentials and try again.');
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   };
 
   return (
@@ -44,11 +35,11 @@ function Login() {
           {error && <div style={{ color: '#ff4444', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
           
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Email</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Username</label>
             <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)}
+              type="text" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)}
               required 
               style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
             />
