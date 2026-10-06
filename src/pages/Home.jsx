@@ -106,11 +106,47 @@ function Home() {
           <div className="grid-container" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '2.5rem'
+            gap: '2.5rem',
+            marginBottom: '5rem'
           }}>
             {records.map(record => (
               <RecordCard key={record.id} record={record} onAddToCart={addToCart} />
             ))}
+          </div>
+
+          {/* WhatsApp Request Banner */}
+          <div className="glass fade-in" style={{
+            padding: '3rem 2rem',
+            textAlign: 'center',
+            borderRadius: '16px',
+            background: 'linear-gradient(145deg, rgba(20,20,20,0.8) 0%, rgba(10,10,10,0.9) 100%)',
+            border: '1px solid rgba(212,175,55,0.3)'
+          }}>
+            <h3 style={{ fontSize: '2.2rem', marginBottom: '1rem' }}>Looking for something <span className="gold-text">specific?</span></h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
+              If you don't see the record you want, let us know! We can track it down or check our back inventory for you.
+            </p>
+            <a
+              href="https://wa.me/18763656179?text=Hi%20Mitchie's,%20I'd%20like%20to%20request%20a%20record:%20"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                fontSize: '1.1rem',
+                textDecoration: 'none',
+                background: '#25D366', // WhatsApp green
+                color: '#fff',
+                border: 'none'
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+              </svg>
+              Request via WhatsApp
+            </a>
           </div>
         </section>
 
