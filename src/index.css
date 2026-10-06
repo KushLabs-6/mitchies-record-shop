@@ -109,3 +109,85 @@ button {
 .fade-in {
   animation: fadeIn 0.8s ease forwards;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem !important;
+  }
+  
+  h1 { font-size: 2.2rem !important; }
+  h2 { font-size: 1.8rem !important; }
+  
+  .glass {
+    padding: 1.2rem !important;
+  }
+
+  .nav-links {
+    display: none !important;
+  }
+  
+  .nav-links.mobile-open {
+    display: flex !important;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: rgba(8, 8, 8, 0.98);
+    backdrop-filter: blur(20px);
+    padding: 1.5rem;
+    gap: 1.5rem !important;
+    border-bottom: 1px solid rgba(212,175,55,0.25);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  }
+
+  .mobile-menu-btn {
+    display: block !important;
+  }
+
+  .cart-sidebar {
+    width: 100% !important;
+    padding: 1.5rem !important;
+  }
+
+  .grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)) !important;
+  }
+
+  .hero-text {
+    font-size: 2.5rem !important;
+  }
+
+  .hero-subtext {
+    font-size: 1rem !important;
+  }
+  
+  section {
+    padding: 4rem 0 !important;
+  }
+  
+  .about-container {
+    gap: 2rem !important;
+  }
+  
+  .footer-container {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .shop-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
+  }
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}

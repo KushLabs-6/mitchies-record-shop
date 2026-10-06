@@ -86,7 +86,7 @@ function Home() {
         <Hero />
         
         <section id="shop" className="container" style={{ padding: '8rem 0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
+          <div className="shop-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
             <div>
               <h2 className="fade-in" style={{ fontSize: '3rem', marginBottom: '1rem' }}>Curated <span className="gold-text">Vinyl.</span></h2>
               <p className="fade-in" style={{ color: 'var(--text-secondary)', maxWidth: '500px' }}>
@@ -103,7 +103,7 @@ function Home() {
             </div>
           </div>
 
-          <div style={{
+          <div className="grid-container" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: '2.5rem'
@@ -164,7 +164,7 @@ function Home() {
       </main>
 
       {/* Cart Sidebar */}
-      <div style={{
+      <div className="cart-sidebar" style={{
         position: 'fixed',
         top: 0,
         right: isCartOpen ? 0 : '-100%',
@@ -215,7 +215,7 @@ function Home() {
       </div>
 
       <footer style={{ padding: '4rem 0', textAlign: 'center', borderTop: '1px solid var(--glass-border)', marginTop: '4rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '1.5rem' }}>
+        <div className="footer-container" style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '1.5rem' }}>
           <a href="https://www.instagram.com/mitchiesrecordshop/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Instagram</a>
           <a href="https://share.google/tEF7S6WTCgaIMjTyO" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Google Business</a>
         </div>
